@@ -108,7 +108,9 @@ export const App = () => {
   };
 
   // Load paginated jobs
-  const loadJobs = async () => {
+  const loadJobs = async (pageOverride, searchOverride) => {
+    const pageToUse = pageOverride !== undefined ? pageOverride : jobsPage;
+    const searchToUse = searchOverride !== undefined ? searchOverride : searchJob;
     try {
       setLoading(true);
       const data = await api.getJobs(
@@ -118,14 +120,17 @@ export const App = () => {
           status: filterStatus,
           direction: filterDirection,
           mode: filterMode,
-          search: searchJob,
-          page: jobsPage,
+          search: searchToUse,
+          page: pageToUse,
           page_size: 15,
         },
         currentUserId
       );
       setJobs(data.items);
       setJobsTotal(data.total);
+      if (pageOverride !== undefined) {
+        setJobsPage(pageOverride);
+      }
     } catch (err) {
       setErrorMsg(err.message);
     } finally {
@@ -413,9 +418,20 @@ export const App = () => {
                 placeholder="Search job number..."
                 value={searchJob}
                 onChange={(e) => setSearchJob(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && loadJobs()}
+                onKeyDown={(e) => e.key === "Enter" && loadJobs(1)}
               />
-              <button onClick={() => { setJobsPage(1); loadJobs(); }}>Search</button>
+              <button onClick={() => loadJobs(1)}>Search</button>
+              {searchJob && (
+                <button
+                  className="secondary"
+                  onClick={() => {
+                    setSearchJob("");
+                    loadJobs(1, "");
+                  }}
+                >
+                  Clear
+                </button>
+              )}
             </div>
           </div>
 
@@ -486,23 +502,28 @@ export const App = () => {
                       <th>Direction / Mode</th>
                       <th>Status</th>
                       <th>Assigned To</th>
+                      <th>Prepared By</th>
                       <th>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {jobs.map((j) => (
-                      <tr key={j.id}>
-                        <td><strong>{j.job_number}</strong></td>
-                        <td>{j.client_code}</td>
-                        <td>{j.branch_code}</td>
-                        <td>{j.direction} / {j.mode}</td>
-                        <td><span className={`badge badge-${j.status}`}>{j.status}</span></td>
-                        <td>{j.assigned_username || "Unassigned"}</td>
-                        <td>
-                          <button className="table-btn" onClick={() => handleSelectJob(j)}>View</button>
-                        </td>
-                      </tr>
-                    ))}
+                    {jobs.map((j) => {
+                      const preparer = users.find((u) => u.id === j.prepared_by_id);
+                      return (
+                        <tr key={j.id}>
+                          <td><strong>{j.job_number}</strong></td>
+                          <td>{j.client_code}</td>
+                          <td>{j.branch_code}</td>
+                          <td>{j.direction} / {j.mode}</td>
+                          <td><span className={`badge badge-${j.status}`}>{j.status}</span></td>
+                          <td>{j.assigned_username || "Unassigned"}</td>
+                          <td>{preparer ? preparer.username : "-"}</td>
+                          <td>
+                            <button className="table-btn" onClick={() => handleSelectJob(j)}>View</button>
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
@@ -784,6 +805,13 @@ export const App = () => {
               <div><strong>Mode:</strong> {selectedJob.mode}</div>
               <div><strong>Status:</strong> <span className={`badge badge-${selectedJob.status}`}>{selectedJob.status}</span></div>
               <div><strong>Assigned:</strong> {selectedJob.assigned_username || "None"}</div>
+              <div>
+                <strong>Prepared By:</strong>{" "}
+                {selectedJob.prepared_by_id
+                  ? (users.find((u) => u.id === selectedJob.prepared_by_id)?.full_name || "Unknown") +
+                    ` (${users.find((u) => u.id === selectedJob.prepared_by_id)?.username || selectedJob.prepared_by_id})`
+                  : "Not yet prepared"}
+              </div>
             </div>
 
             <div className="modal-action-box">

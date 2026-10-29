@@ -17,8 +17,8 @@ A single `.env` file in the root directory manages all settings:
 DATABASE_URL=postgresql+asyncpg://manish:somethingelse@localhost:5432/nfpl
 APP_ENV=development
 APP_HOST=0.0.0.0
-APP_PORT=8000
-VITE_API_BASE_URL=http://localhost:8000
+APP_PORT=8002
+VITE_API_BASE_URL=http://localhost:8002
 ```
 
 ### Run Frontend & Backend Together
@@ -27,8 +27,8 @@ Run the single root runner script:
 python run.py
 ```
 This automatically starts:
-- **Backend API**: `http://localhost:8000` (auto-applies migrations and seeds data on startup)
-- **Frontend App**: `http://localhost:8002` (pure React JSX on Vite)
+- **Backend API**: `http://localhost:8002` (auto-applies migrations and seeds data on startup)
+- **Frontend App**: `http://localhost:8000` (pure React JSX on Vite)
 
 Press `Ctrl+C` to stop both services gracefully.
 

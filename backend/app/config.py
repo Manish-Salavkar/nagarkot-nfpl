@@ -12,7 +12,7 @@ class Settings(BaseSettings):
 
     APP_ENV: str = "development"
     APP_HOST: str = "0.0.0.0"
-    APP_PORT: int = 8000
+    APP_PORT: int = 8002
 
     POSTGRES_USER: str = "postgres"
     POSTGRES_PASSWORD: str = "postgres"

@@ -12,21 +12,27 @@ def main():
     frontend_dir = root_dir / "frontend"
 
     venv_python = backend_dir / ".venv" / "bin" / "python3"
+    if not venv_python.exists():
+        raise RuntimeError(f"Virtual environment not found: {venv_python}")
     python_cmd = str(venv_python) if venv_python.exists() else sys.executable
 
     print("\nStarting NFPL Access Control Service...")
-    print("Backend:  http://localhost:8000")
-    print("Frontend: http://localhost:8002\n")
+    print("Backend:  http://localhost:8002")
+    print("Frontend: http://localhost:8000\n")
 
     # Start FastAPI backend
     backend_process = subprocess.Popen(
-        [python_cmd, "-m", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"],
+        [python_cmd, "-m", "uvicorn", "app.main:app", "--host", "127.0.0.1", "--port", "8002"],
         cwd=str(backend_dir),
     )
 
-    # Start Vite frontend on port 8002
+    # Start Vite frontend on port 8000
     frontend_process = subprocess.Popen(
-        ["npm", "run", "dev", "--", "--port", "8002"],
+        [
+            "npm", "run", "dev", "--",
+            "--host", "127.0.0.1",
+            "--port", "8000",
+        ],
         cwd=str(frontend_dir),
     )
 
